@@ -414,10 +414,128 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
+
+    /* Defensive base rules (ensures 100% clean layout even if Tailwind CDN is slow or blocked on mobile) */
+    .hidden {
+      display: none !important;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #appHeader, #filterBar {
+      flex-shrink: 0;
+    }
+
+    #workspaceMain {
+      flex: 1 1 0%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 1024px) {
+      #workspaceMain {
+        flex-direction: row;
+      }
+    }
+
+    #canvasSection {
+      flex: 1 1 0%;
+      min-width: 0;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #canvasViewport {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #treeSidebar {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex-shrink: 0;
+      width: 100%;
+      height: 44%;
+      overflow: hidden;
+    }
+
+    @media (min-width: 1024px) {
+      #treeSidebar {
+        width: 390px;
+        height: auto;
+      }
+    }
+
+    #treeContainer {
+      flex: 1 1 0%;
+      overflow-y: auto;
+    }
+
+    #inspectorPanel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #inspBody {
+      flex: 1 1 0%;
+      overflow-y: auto;
+    }
+
+    #addNodeModal, #exportModal, #resetModal {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+    }
+
+    button {
+      background: transparent;
+      color: inherit;
+      font-family: inherit;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    body {
+      height: 100vh;
+      height: 100dvh;
+      width: 100vw;
+      max-width: 100%;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    @media (max-width: 1023px) {
+      #inspectorPanel {
+        top: 8px !important;
+        left: 8px !important;
+        right: 8px !important;
+        bottom: 8px !important;
+        width: auto !important;
+        max-width: none !important;
+      }
+    }
   </style>
 </head>
 
-<body class="flex flex-col h-screen w-screen overflow-hidden select-none">
+<body class="flex flex-col h-[100dvh] w-full max-w-full overflow-hidden select-none">
 
   <!-- ==================== HEADER EJECUTIVO & KPI BAR ==================== -->
   <header id="appHeader" class="vortex-panel border-b shrink-0 z-40">
@@ -468,7 +586,7 @@
               REUNIÓN ALPUJARRA · OF. 1311
             </span>
           </div>
-          <p id="projectSubtitleEl" class="text-[11px] truncate" style="color: var(--text-muted);">
+          <p id="projectSubtitleEl" class="hidden md:block text-[11px] truncate" style="color: var(--text-muted);">
             Arquitectura Viva de Producto, Datos &amp; Inteligencia Artificial — Vortex Labs S.A.S.
           </p>
         </div>
@@ -517,6 +635,11 @@
           <span id="themeLabel" class="font-mono text-[11px]">Obsidian</span>
         </button>
 
+        <button id="btnMobileFilters" type="button" onclick="toggleMobileFilters()" class="md:hidden px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1" style="background: var(--bg-elev); border-color: var(--border-soft);">
+          <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-[#FF6B00]"></i>
+          <span>Filtros</span>
+        </button>
+
         <button id="btnReset" type="button" onclick="openResetModal()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-[#FF3B1F]/55 bg-[#FF3B1F]/12 hover:bg-[#FF3B1F]/22 text-[#FF3B1F] transition-all flex items-center gap-1" title="Reiniciar estado y posiciones">
           <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
           <span class="hidden xl:inline">Reiniciar</span>
@@ -525,8 +648,8 @@
     </div>
 
     <!-- Row 2: Live KPI Bar -->
-    <div class="px-3 lg:px-5 py-1.5 flex flex-wrap items-center justify-between gap-3 text-xs" style="background: var(--bg-carbon);">
-      <div class="flex flex-wrap items-center gap-4 lg:gap-6">
+    <div class="px-3 lg:px-5 py-1.5 flex items-center justify-between gap-3 text-xs overflow-x-auto no-scrollbar" style="background: var(--bg-carbon);">
+      <div class="flex items-center gap-3.5 lg:gap-6 shrink-0 whitespace-nowrap">
         <!-- Nodos Activos -->
         <div class="flex items-center gap-2">
           <span class="font-mono text-[10px] uppercase tracking-wider" style="color: var(--text-muted);">Nodos Activos</span>
@@ -575,7 +698,7 @@
   </header>
 
   <!-- ==================== BARRA DE FILTROS & LEYENDA ==================== -->
-  <section id="filterBar" class="vortex-panel border-b px-3 lg:px-5 py-2 flex flex-wrap items-center justify-between gap-2.5 shrink-0 z-30">
+  <section id="filterBar" class="hidden md:flex vortex-panel border-b px-3 lg:px-5 py-2 flex-wrap items-center justify-between gap-2.5 shrink-0 z-30">
     <!-- Left Filters -->
     <div class="flex flex-wrap items-center gap-2">
       <!-- Search -->
@@ -649,10 +772,10 @@
   </section>
 
   <!-- ==================== WORKSPACE PRINCIPAL ==================== -->
-  <main id="workspaceMain" class="flex-1 min-h-0 flex relative overflow-hidden">
+  <main id="workspaceMain" class="flex-1 min-h-0 flex flex-col lg:flex-row relative overflow-hidden">
 
     <!-- LEFT / CENTER: SPAGHETTI CANVAS CONTAINER -->
-    <section id="canvasSection" class="flex-1 min-w-0 relative overflow-hidden">
+    <section id="canvasSection" class="flex-1 min-w-0 min-h-0 relative overflow-hidden">
       <div id="canvasViewport" class="w-full h-full relative overflow-hidden">
         <!-- Transformed Logical World 2740 x 1320 -->
         <div id="canvasWorld">
@@ -924,7 +1047,7 @@
     </aside>
 
     <!-- RIGHT PANE: ÁRBOL TÉCNICO / PROBLEMAS Y ALCANCE SINCRONIZADO -->
-    <aside id="treeSidebar" class="vortex-panel border-l w-[380px] xl:w-[420px] shrink-0 flex flex-col min-h-0 z-20">
+    <aside id="treeSidebar" class="vortex-panel border-t lg:border-t-0 lg:border-l w-full lg:w-[380px] xl:w-[420px] h-[44%] lg:h-auto shrink-0 flex flex-col min-h-0 z-20">
       <!-- Tree Header -->
       <div class="px-3.5 py-2.5 border-b flex items-center justify-between gap-2 shrink-0" style="background: var(--bg-carbon); border-color: var(--border-soft);">
         <div>
@@ -3472,20 +3595,20 @@ window.VORTEX_EDGES = [
           } else if (state.viewMode === 'tree') {
             canvasSec.classList.add('hidden');
             treeSec.classList.remove('hidden');
-            treeSec.classList.remove('w-[380px]', 'xl:w-[420px]');
-            treeSec.classList.add('flex-1');
+            treeSec.classList.remove('lg:w-[380px]', 'xl:w-[420px]', 'h-[44%]', 'lg:h-auto');
+            treeSec.classList.add('flex-1', 'h-full');
             if (insp) {
-              insp.style.position = 'relative';
+              insp.style.position = window.innerWidth < 1024 ? 'absolute' : 'relative';
               insp.style.top = '0';
               insp.style.left = '0';
               insp.style.bottom = '0';
-              insp.style.margin = '12px';
+              insp.style.margin = window.innerWidth < 1024 ? '0' : '12px';
               insp.style.width = '420px';
             }
           } else {
             canvasSec.classList.remove('hidden');
-            treeSec.classList.remove('hidden', 'flex-1');
-            treeSec.classList.add('w-[380px]', 'xl:w-[420px]');
+            treeSec.classList.remove('hidden', 'flex-1', 'h-full');
+            treeSec.classList.add('lg:w-[380px]', 'xl:w-[420px]', 'h-[44%]', 'lg:h-auto');
             if (insp) {
               insp.style.position = 'absolute';
               insp.style.top = '12px';
@@ -4584,6 +4707,18 @@ window.VORTEX_EDGES = [
         renderAll();
         if (mode !== 'tree') {
           setTimeout(function () { applyCanvasTransform(); }, 20);
+        }
+      };
+
+      window.toggleMobileFilters = function () {
+        var fb = document.getElementById('filterBar');
+        if (!fb) return;
+        if (fb.classList.contains('hidden')) {
+          fb.classList.remove('hidden');
+          fb.classList.add('flex');
+        } else {
+          fb.classList.add('hidden');
+          fb.classList.remove('flex');
         }
       };
 
